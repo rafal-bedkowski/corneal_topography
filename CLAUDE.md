@@ -65,12 +65,19 @@ Add new agents by appending an entry and creating the file in `/agents/`. Do not
 
 ## Architecture notes
 
-None yet. Recorded after the first Analyst and Developer cycles.
+Dataset (see `input_data/dataset_review.md`): Kaggle "Keratoconus detection", 573 eyes (Normal / Keratoconus / Suspect), 7 Pentacam map screenshots per eye (224×224 JPEG, no numeric data, no patient ids, laterality only inside the pixels). An exam is identified by (split, class, case number). The dataset lives in `dataset/archive/` and is not tracked by git.
+
+Application architecture: not yet defined; recorded after the first Developer cycle.
 
 ## Changelog
 
 Record architectural and scope decisions per iteration, newest first. Format: `YYYY-MM-DD — decision — reason`.
 
+- 2026-10-20 — First feature spec drafted: `input_data/specs/exam-browser-with-extracted-values.md` (exam browser, OCR-extracted values, class statistics); awaiting Product Owner approval before the Developer starts.
+- 2026-10-20 — OCR decision: numbers are read from the map images offline on macOS (Vision) into a local JSON index served by FastAPI; values are approximate and flagged by status — Vision was clearly more accurate than the portable RapidOCR on the tested sample (see `dataset_review.md` section 7).
+- 2026-10-20 — Product Owner chose numeric analysis (values from maps, derived indicators, class comparison) for the first MVP, accepting OCR errors.
+- 2026-10-20 — Dataset is not committed (`dataset/archive/` in `.gitignore`) — license is not stated on the Kaggle page, so redistribution rights are unknown.
+- 2026-10-20 — Analyst reviewed the dataset (`input_data/dataset_review.md`); `EC_A`/`EC_P` interpreted as elevation maps with a different reference surface (confirmed by the Product Owner).
 - 2026-10-20 — No Claude attribution in commits (no `Co-Authored-By` trailer) — Product Owner does not want Claude listed as a contributor on GitHub; the initial commit was rewritten to remove it.
 - 2026-10-20 — Git policy: the Product Owner runs every git command; the orchestrator only supplies commands, commit message and a short explanation of each command — Product Owner wants full control over the repository history.
 - 2026-10-20 — Language convention: chat messages to the Product Owner in Polish, all project artifacts in English — Product Owner wants to follow progress in Polish while keeping the codebase in English.
