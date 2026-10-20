@@ -59,6 +59,9 @@ Three classes: Normal (NOR), Keratoconus (KCN), Suspect (SUSP). Labels were assi
 
 - **No numeric data.** There is no CSV, no K1/K2/Kmax, no thickness values and no grid. Features such as interactive colour scales, cross-sections, value probing, index computation or 3D surfaces cannot be derived from these files without image-based reconstruction.
 - **No patient or eye IDs.** Left and right eyes of the same patient cannot be linked; there is no patient id, age or sex per case.
+- **Duplicate exams, some with conflicting labels.** OCR of the thickness map (`CT_A`) on all 573 exams found 12 pairs of exams with identical thickness values (at least 4 identical printed values, so the real number is probably higher because OCR found 4 or more values on only about 490 of 573 maps). Five pairs span different classes, e.g. `independent_test/keratoconus/3` and `independent_test/suspect/7` also have identical curvature and elevation values and differ only in colour scale and label. One pair crosses the train/test boundary (`independent_test/suspect/4` and `train_validation/suspect/109`). These are most likely the same eye exported twice with different Pentacam colour settings. Consequences: class statistics are biased, and the independent test set is not fully independent. Pairs found:
+  `it/keratoconus/3 = it/suspect/7`, `it/keratoconus/47 = it/suspect/41`, `it/normal/25 = it/suspect/39`, `it/normal/26 = it/suspect/40`, `tv/normal/125 = tv/suspect/75`, `it/suspect/4 = tv/suspect/109`, `tv/keratoconus/78 = tv/keratoconus/84`, `tv/keratoconus/79 = tv/keratoconus/85`, `tv/normal/127 = tv/normal/42`, `tv/normal/142 = tv/normal/94`, `tv/normal/2 = tv/normal/53`, `tv/suspect/115 = tv/suspect/116`
+  (`it` = independent_test, `tv` = train_validation).
 - **Mixed colour scales** between acquisitions (see section 4).
 - **License is not stated** on the Kaggle page ("Other (specified in description)", with no license in the description). Redistribution rights are unknown; the dataset should not be committed to a public repository without the Product Owner's decision.
 - **Class balance:** Suspect is the smallest class (173).
@@ -78,6 +81,8 @@ Conclusions:
 - OCR error rate on curvature and elevation maps is visible even on a single case. Using it requires validation rules (plausible ranges per map) and a flag for low-confidence values.
 - Vision OCR is macOS-only. A deployable (Linux) backend needs a portable OCR engine (e.g. Tesseract or EasyOCR), which is expected to be less accurate on 224×224 images and has not been tested.
 - Portable engine test: RapidOCR (ONNX, pip-installable, runs on Linux) on the same three images was clearly worse than macOS Vision: it merged or split values (`4381`, `4311`, `486 486`, `+12--+89`), dropped several values and returned confidence of 0.5–0.77. Tesseract and EasyOCR were not tested.
+- Perimeter labels leak into the OCR output as numbers: for example `350.·S` (a damaged angle label) was read as a thickness-like value on one `CT_A` map, and tokens such as `330`, `300` and `240` appear without a degree sign. The position rule in the spec (4.5) is therefore essential, not optional.
+- Vision OCR found at least 4 thickness values on 488 of the 573 `CT_A` maps and a laterality label on 503 of 573 thickness maps (70 maps without one). Laterality must be read from several maps, not only one.
 - Reliable and cheap to extract: eye laterality (OD/OS) and the minimum pachymetry value from `CT_A`.
 
 ## 8. Implications for the MVP

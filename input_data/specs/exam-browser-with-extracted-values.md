@@ -23,6 +23,7 @@ Out of scope: authentication, uploading new exams, editing or correcting values,
 - OCR runs offline on the Product Owner's Mac with macOS Vision; the backend only serves the resulting JSON. Errors are accepted but must be flagged.
 - The dataset and the JSON index are not committed to git (unknown dataset license).
 - `EC_A` / `EC_P` are elevation maps with a different reference surface.
+- Suspected duplicate exams (same eye exported twice, see `dataset_review.md` section 6) are flagged and excluded from the statistics.
 
 ## 4. Data model
 
@@ -66,7 +67,10 @@ Example: `train_validation/keratoconus/14`.
   "exam_id": "...", "split": "...", "label": "...", "case": 14,
   "laterality": "OD" | "OS" | "unknown",
   "maps": { "<map_type>": { "file": "<relative path under dataset dir>", "values": [ExtractedValue, ...] } },
-  "indicators": { ...see 4.6 }
+  "indicators": { ...see 4.6 },
+  "possible_duplicate_of": ["<exam_id>", ...],      empty list when none (see 4.8)
+  "stats_excluded": false,                         true when excluded from statistics
+  "stats_exclusion_reason": null | "duplicate" | "duplicate_conflicting_labels"
 }
 ```
 
@@ -105,7 +109,21 @@ The UI labels them "visible max curvature", "visible min thickness", etc., with 
 
 ### 4.7 Laterality
 
-Read from the `OD` / `OS` text on the `sag_a` image (fallback: the first map that yields it). If the maps of one exam disagree, the value is `unknown`.
+Read from the `OD` / `OS` text found on the exam's maps. Several maps are inspected (not only `sag_a`, because some maps carry no label); the exam gets the value found on the majority of its maps. If no map yields a label, or maps disagree with no majority, the value is `unknown`.
+
+### 4.8 Duplicate detection
+
+Run at ingestion, after value acceptance (4.5), on `ct_a` accepted values only.
+
+1. Two exams are possible duplicates when both have at least 4 accepted `ct_a` values, they share at least 4 identical accepted values, and the shared values make up at least 60% of the union of their accepted values. Laterality must not contradict (equal, or at least one `unknown`).
+2. Duplicate relations are transitive: exams linked directly or through others form a group. Each member lists the other members in `possible_duplicate_of`.
+3. Statistics exclusion, per group:
+   - All members have the same label: exactly one member stays in the statistics, the one in `train_validation` before `independent_test`, then with the lowest case number. The others get `stats_excluded: true`, reason `duplicate`.
+   - Members have different labels: the label is ambiguous, so **all** members get `stats_excluded: true`, reason `duplicate_conflicting_labels`.
+4. Excluded exams stay in listings and detail views; only the statistics ignore them.
+5. The ingestion summary prints the number of groups, of excluded exams per reason, and the list of groups.
+
+Reference result on the provided dataset: the Analyst's OCR run found these 12 pairs (`it` = `independent_test`, `tv` = `train_validation`): `it/keratoconus/3 = it/suspect/7`, `it/keratoconus/47 = it/suspect/41`, `it/normal/25 = it/suspect/39`, `it/normal/26 = it/suspect/40`, `tv/normal/125 = tv/suspect/75`, `it/suspect/4 = tv/suspect/109`, `tv/keratoconus/78 = tv/keratoconus/84`, `tv/keratoconus/79 = tv/keratoconus/85`, `tv/normal/127 = tv/normal/42`, `tv/normal/142 = tv/normal/94`, `tv/normal/2 = tv/normal/53`, `tv/suspect/115 = tv/suspect/116`. More groups may exist.
 
 ## 5. Ingestion (offline command)
 
@@ -132,7 +150,7 @@ Base path `/api`. All responses JSON except images. Errors use `{"detail": "<mes
 | `GET /api/exams/{split}/{label}/{case}/maps/{map_type}/image` | The JPEG file. 404 if unknown. Path components are validated against the index; no file path is built from raw user input. |
 | `GET /api/stats` | Class comparison per 6.1. Optional query `split`. |
 
-`ExamSummary`: `exam_id, split, label, case, laterality, min_thickness_um, max_curvature_a_d, thumbnail_url` (thumbnail = `sag_a` image).
+`ExamSummary`: `exam_id, split, label, case, laterality, min_thickness_um, max_curvature_a_d, possible_duplicate_of, stats_excluded, thumbnail_url` (thumbnail = `sag_a` image).
 
 Invalid query values (unknown `split`, `label`, `map_type`, out-of-range `page_size`) return 422 or 404 as FastAPI/Pydantic standard behaviour.
 
@@ -143,7 +161,8 @@ Invalid query values (unknown `split`, `label`, `map_type`, out-of-range `page_s
   "classes": [
     {
       "label": "normal",
-      "exams": 200,
+      "exams": 195,
+      "excluded_duplicates": 5,
       "laterality": {"OD": n, "OS": n, "unknown": n},
       "indicators": {
         "min_thickness_um": {"n": 190, "mean": ..., "median": ..., "std": ..., "min": ..., "max": ...},
@@ -157,7 +176,7 @@ Invalid query values (unknown `split`, `label`, `map_type`, out-of-range `page_s
 }
 ```
 
-`n` is the number of exams with a non-null value for that indicator. `std` is the sample standard deviation and is `null` when `n < 2`. The class order is `normal`, `keratoconus`, `suspect`.
+All statistics ignore exams with `stats_excluded: true`; `exams` counts the remaining exams of the class and `excluded_duplicates` the excluded ones, so `exams + excluded_duplicates` equals the number of exams of that class in the selected split. (The numbers above are illustrative.) `n` is the number of exams with a non-null value for that indicator. `std` is the sample standard deviation and is `null` when `n < 2`. The class order is `normal`, `keratoconus`, `suspect`.
 
 ## 7. Frontend
 
@@ -166,7 +185,7 @@ Language of the UI: English. Responsive layout (desktop and tablet minimum).
 ### 7.1 Exam list (`/`)
 
 - Filters: split, label, laterality. Sorting per the API. Pagination.
-- Grid of cards: thumbnail, label badge, `exam_id` short form, laterality, visible min thickness, visible max curvature (shown as `—` when null).
+- Grid of cards: thumbnail, label badge, `exam_id` short form, laterality, visible min thickness, visible max curvature (shown as `—` when null), and a "Possible duplicate" badge when `possible_duplicate_of` is not empty.
 - States: loading skeleton, empty result ("No exams match the filters"), error with retry (including the 503 "index missing" message, which tells the user to run the ingestion command).
 
 ### 7.2 Exam detail (`/exams/<split>/<label>/<case>`)
@@ -175,6 +194,7 @@ Language of the UI: English. Responsive layout (desktop and tablet minimum).
 - Seven maps in a responsive grid, titled per 4.2. Clicking a map opens it enlarged (modal, closable with Esc).
 - Per map, a table of extracted values: text, value, unit, confidence, status. Rows with status other than `accepted` are visually distinguished and listed after the accepted rows.
 - Indicator panel with the six derived indicators and the tooltip from 4.6.
+- When `possible_duplicate_of` is not empty: a notice "This exam looks like a duplicate of …" with links to the other exams (showing their labels), and the statement whether this exam is excluded from the statistics and why (`duplicate`, or `duplicate_conflicting_labels` with the text "labels of the duplicates disagree").
 - Permanent notice: "Values are extracted automatically from images and may contain errors. For research and demonstration only; not a clinical tool."
 - Label wording is neutral: "Dataset label: Keratoconus". No diagnostic claim.
 - States: loading, 404 ("Exam not found"), error with retry.
@@ -182,7 +202,7 @@ Language of the UI: English. Responsive layout (desktop and tablet minimum).
 ### 7.3 Statistics (`/stats`)
 
 - Filter: split (all / train_validation / independent_test).
-- Class count chart (3 bars).
+- Class count chart (3 bars) of the exams included in the statistics, and a line "N exams excluded as possible duplicates" (with the per-class split), linking to the exam list.
 - Table of indicator statistics per class (n, mean, median, std, min, max).
 - Histogram of `min_thickness_um` with one series per class.
 - Extraction quality table per class (accepted, low confidence, out of range, rejected).
@@ -225,7 +245,7 @@ Ingestion
 5. AC5: On a non-macOS platform the command exits non-zero with a message and writes nothing.
 6. AC6: Perimeter labels and `9mm` never appear with status `accepted`.
 7. AC7: Values violating the format or range rules in 4.5 are never `accepted`, verified by unit tests with synthetic OCR output including `43.11`, `148.6` on `sag_a`, `•15` and `+12..-` on `elv_a`.
-8. AC8: Accuracy on a gold sample: the Analyst provides a manually labelled sample of 10 exams (70 images) in `input_data/gold/`. At least 90% of `accepted` values in that sample match the gold values, and `min_thickness_um` is correct for at least 9 of 10 exams. If the targets are missed the iteration is reported to the Product Owner, not silently adjusted.
+8. AC8: Accuracy on the gold sample `input_data/gold/gold_sample.json` (10 exams, hand-read by the Analyst): laterality and the five indicators `min_thickness_um`, `max_curvature_a_d`, `min_curvature_a_d`, `max_elevation_a_um`, `max_elevation_p_um` computed by ingestion are compared with the gold lists of acceptable values (an indicator is correct if it equals any listed value; `null` gold entries are not scored). At least 90% of the scored (exam, field) pairs are correct, and `min_thickness_um` is correct for at least 9 of 10 exams. If the targets are missed, the iteration is reported to the Product Owner, not silently adjusted. (Revised from the first draft, which measured the share of correct accepted values: hand-labelling all values on 70 images was not practical, and the indicators are what the application reports.)
 
 API
 9. AC9: `GET /api/health` returns 200 with `exams: 573` for the provided index and 503 when the index file is absent.
@@ -235,8 +255,11 @@ API
 13. AC13: `page_size=101`, `page=0`, `label=foo` return 422.
 14. AC14: `GET /api/exams/train_validation/keratoconus/14` returns 7 maps with image URLs; an unknown id returns 404.
 15. AC15: The image endpoint returns `image/jpeg` bytes for a valid map and 404 for an unknown map, unknown exam, or traversal attempt (`..%2f`).
-16. AC16: `GET /api/stats` returns the classes in the order `normal`, `keratoconus`, `suspect`, per-class exam counts equal to AC1 (or the filtered split), `std` null when `n < 2`, and indicator statistics that equal values recomputed from the index.
-17. AC17: `GET /api/stats?split=independent_test` returns 50 exams per class.
+16. AC16: `GET /api/stats` returns the classes in the order `normal`, `keratoconus`, `suspect`, `exams + excluded_duplicates` per class equal to the class size in AC1 (or in the filtered split), `std` null when `n < 2`, and indicator statistics that equal values recomputed from the index over the non-excluded exams only.
+17. AC17: `GET /api/stats?split=independent_test` has `exams + excluded_duplicates` = 50 per class.
+27. AC27: Duplicate detection (4.8) flags at least 10 of the 12 reference pairs; every flagged group has identical thickness values in the shared set, verified by unit tests with synthetic data (same label, different labels, three-member group, unknown laterality, fewer than 4 values).
+28. AC28: In a group with different labels all members have `stats_excluded: true` with reason `duplicate_conflicting_labels`; in a same-label group exactly one member has `stats_excluded: false`, chosen by the rule in 4.8.
+29. AC29: Excluded exams still appear in `GET /api/exams` and the detail endpoint, with `stats_excluded` and `possible_duplicate_of` set; the list and detail UI show the duplicate badge/notice.
 
 Frontend
 18. AC18: The list shows 24 cards on the first page, filters update the list and the URL query, and pagination reaches page 24 (573 / 24, rounded up).
@@ -257,3 +280,4 @@ None blocking. Items to confirm when approving this spec:
 - Accuracy targets in AC8 (90% of accepted values, 9 of 10 thickness values) are proposals.
 - The six derived indicators and their "visible max / visible min" naming (4.6).
 - Exam-to-exam comparison is out of scope for this iteration.
+- Duplicates with different labels exclude all members from the statistics (4.8), because the true label is unknown; the Product Owner asked only for "exclude duplicates from statistics" and this rule is the Analyst's proposal.

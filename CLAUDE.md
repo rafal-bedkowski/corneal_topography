@@ -73,6 +73,8 @@ Application architecture: not yet defined; recorded after the first Developer cy
 
 Record architectural and scope decisions per iteration, newest first. Format: `YYYY-MM-DD — decision — reason`.
 
+- 2026-10-20 — Spec approved by the Product Owner. Gold sample created (`input_data/gold/gold_sample.json`, 10 exams); AC8 revised to measure indicator accuracy against it instead of per-value accuracy. Laterality is read from several maps, not only `sag_a`.
+- 2026-10-20 — Dataset finding: at least 12 pairs of duplicate exams (5 with conflicting classes, 1 across train/test), see `dataset_review.md` section 6; decision by the Product Owner: flag them and exclude them from the statistics (spec 4.8; conflicting-label groups are excluded entirely).
 - 2026-10-20 — First feature spec drafted: `input_data/specs/exam-browser-with-extracted-values.md` (exam browser, OCR-extracted values, class statistics); awaiting Product Owner approval before the Developer starts.
 - 2026-10-20 — OCR decision: numbers are read from the map images offline on macOS (Vision) into a local JSON index served by FastAPI; values are approximate and flagged by status — Vision was clearly more accurate than the portable RapidOCR on the tested sample (see `dataset_review.md` section 7).
 - 2026-10-20 — Product Owner chose numeric analysis (values from maps, derived indicators, class comparison) for the first MVP, accepting OCR errors.

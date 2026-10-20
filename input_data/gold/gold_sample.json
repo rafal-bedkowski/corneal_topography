@@ -1,0 +1,126 @@
+{
+  "description": "Hand-read reference values for 10 exams, used by the Tester to measure OCR/indicator accuracy (spec AC8). Read visually by the Analyst from 4x enlarged map images; the Product Owner may spot-check. Each indicator holds the list of acceptable values (more than one only where the printed text is partly covered by a marker and cannot be read with certainty). null means 'not scored' because the value is unreadable.",
+  "indicator_definitions": "Same as spec section 4.6: min_thickness_um = lowest printed value on CT_A; max/min_curvature_a_d = highest/lowest printed value on Sag_A; max_elevation_a_um / max_elevation_p_um = highest printed value on Elv_A / Elv_P.",
+  "exams": [
+    {
+      "exam_id": "train_validation/normal/1",
+      "laterality": "OD",
+      "ct_a_values": [558, 564, 587, 627, 683],
+      "indicators": {
+        "min_thickness_um": [558],
+        "max_curvature_a_d": [42.4, 42.5],
+        "min_curvature_a_d": [40.7],
+        "max_elevation_a_um": [2],
+        "max_elevation_p_um": [8]
+      }
+    },
+    {
+      "exam_id": "independent_test/normal/5",
+      "laterality": "OD",
+      "ct_a_values": [533, 544, 576, 630],
+      "indicators": {
+        "min_thickness_um": [533],
+        "max_curvature_a_d": [46.5],
+        "min_curvature_a_d": [41.7],
+        "max_elevation_a_um": [20],
+        "max_elevation_p_um": [38]
+      }
+    },
+    {
+      "exam_id": "independent_test/normal/20",
+      "laterality": "OS",
+      "ct_a_values": [511, 519, 544, 591],
+      "indicators": {
+        "min_thickness_um": [511],
+        "max_curvature_a_d": [43.4],
+        "min_curvature_a_d": [41.7],
+        "max_elevation_a_um": [4],
+        "max_elevation_p_um": [10]
+      }
+    },
+    {
+      "exam_id": "train_validation/keratoconus/14",
+      "laterality": "OS",
+      "ct_a_values": [460, 481, 532, 601],
+      "indicators": {
+        "min_thickness_um": [460],
+        "max_curvature_a_d": [52.5],
+        "min_curvature_a_d": [38.2],
+        "max_elevation_a_um": [36, 39],
+        "max_elevation_p_um": [62]
+      }
+    },
+    {
+      "exam_id": "independent_test/keratoconus/3",
+      "laterality": "OD",
+      "ct_a_values": [476, 487, 520, 574],
+      "indicators": {
+        "min_thickness_um": [476],
+        "max_curvature_a_d": [45.2],
+        "min_curvature_a_d": [38.6],
+        "max_elevation_a_um": [18],
+        "max_elevation_p_um": [37]
+      }
+    },
+    {
+      "exam_id": "independent_test/keratoconus/30",
+      "laterality": "OS",
+      "ct_a_values": [431, 454, 511, 570],
+      "indicators": {
+        "min_thickness_um": [431],
+        "max_curvature_a_d": [52.8],
+        "min_curvature_a_d": [38.3, 38.9],
+        "max_elevation_a_um": [27],
+        "max_elevation_p_um": [57]
+      }
+    },
+    {
+      "exam_id": "train_validation/keratoconus/100",
+      "laterality": "OS",
+      "ct_a_values": [375, 415, 504, 603, 700],
+      "indicators": {
+        "min_thickness_um": [375],
+        "max_curvature_a_d": null,
+        "min_curvature_a_d": [39.8],
+        "max_elevation_a_um": [48],
+        "max_elevation_p_um": [80]
+      }
+    },
+    {
+      "exam_id": "train_validation/suspect/1",
+      "laterality": "OD",
+      "ct_a_values": [472, 482, 509, 554, 621],
+      "indicators": {
+        "min_thickness_um": [472],
+        "max_curvature_a_d": [52.5],
+        "min_curvature_a_d": [39.2],
+        "max_elevation_a_um": [73],
+        "max_elevation_p_um": [112]
+      }
+    },
+    {
+      "exam_id": "independent_test/suspect/7",
+      "laterality": "OD",
+      "ct_a_values": [476, 487, 520, 574],
+      "indicators": {
+        "min_thickness_um": [476],
+        "max_curvature_a_d": [45.2],
+        "min_curvature_a_d": [38.6],
+        "max_elevation_a_um": [18],
+        "max_elevation_p_um": [37]
+      }
+    },
+    {
+      "exam_id": "independent_test/suspect/40",
+      "laterality": "OS",
+      "ct_a_values": [506, 515, 543, 596, 678],
+      "indicators": {
+        "min_thickness_um": [506],
+        "max_curvature_a_d": [45.8],
+        "min_curvature_a_d": [41.7],
+        "max_elevation_a_um": [5, 12],
+        "max_elevation_p_um": [9]
+      }
+    }
+  ]
+}
