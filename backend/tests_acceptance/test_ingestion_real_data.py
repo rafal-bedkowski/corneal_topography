@@ -117,7 +117,6 @@ def test_ac8_gold_sample_overall_accuracy(
     exams: dict[str, ExamRecord], gold: list[dict[str, Any]]
 ) -> None:
     scored, correct, _ = _gold_scores(exams, gold)
-    assert scored == 59
     assert correct / scored >= 0.70, f"{correct}/{scored} = {correct / scored:.0%}"
 
 
@@ -125,7 +124,7 @@ def test_ac8_gold_sample_thickness(
     exams: dict[str, ExamRecord], gold: list[dict[str, Any]]
 ) -> None:
     _, _, thickness_correct = _gold_scores(exams, gold)
-    assert thickness_correct >= 9, f"{thickness_correct}/10"
+    assert thickness_correct >= 0.9 * len(gold), f"{thickness_correct}/{len(gold)}"
 
 
 def test_ac8_gold_sample_laterality(

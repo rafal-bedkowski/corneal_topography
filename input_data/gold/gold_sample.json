@@ -1,125 +1,713 @@
 {
-  "description": "Hand-read reference values for 10 exams, used by the Tester to measure OCR/indicator accuracy (spec AC8). Read visually by the Analyst from 4x enlarged map images; the Product Owner may spot-check. Each indicator holds the list of acceptable values (more than one only where the printed text is partly covered by a marker and cannot be read with certainty). null means 'not scored' because the value is unreadable.",
-  "indicator_definitions": "Same as spec section 4.6: min_thickness_um = lowest printed value on CT_A; max/min_curvature_a_d = highest/lowest printed value on Sag_A; max_elevation_a_um / max_elevation_p_um = highest printed value on Elv_A / Elv_P.",
+  "description": "Hand-read reference values for 30 exams, used to measure indicator accuracy (spec AC8). Read visually by the Analyst from 4x enlarged map images; the Product Owner may spot-check. Each indicator holds the list of acceptable values (more than one only where the printed text is partly covered and cannot be read with certainty). null means 'not scored' because the value is hidden or unreadable (typically the bold maximum curvature, which is often partly covered by a marker). Field 'set': 'tuning' (20 exams, may be used while developing the recogniser) or 'holdout' (10 exams, must not be used for tuning; only for the final evaluation).",
+  "indicator_definitions": "min_thickness_um = lowest printed value on CT_A; max/min_curvature_a_d = highest/lowest printed value on Sag_A (including the bold maximum); max_elevation_a_um / max_elevation_p_um = highest printed value on Elv_A / Elv_P.",
   "exams": [
     {
       "exam_id": "train_validation/normal/1",
       "laterality": "OD",
-      "ct_a_values": [558, 564, 587, 627, 683],
+      "ct_a_values": [
+        558,
+        564,
+        587,
+        627,
+        683
+      ],
       "indicators": {
-        "min_thickness_um": [558],
-        "max_curvature_a_d": [42.4, 42.5],
-        "min_curvature_a_d": [40.7],
-        "max_elevation_a_um": [2],
-        "max_elevation_p_um": [8]
-      }
+        "min_thickness_um": [
+          558
+        ],
+        "max_curvature_a_d": [
+          42.4,
+          42.5
+        ],
+        "min_curvature_a_d": [
+          40.7
+        ],
+        "max_elevation_a_um": [
+          2
+        ],
+        "max_elevation_p_um": [
+          8
+        ]
+      },
+      "set": "tuning"
     },
     {
       "exam_id": "independent_test/normal/5",
       "laterality": "OD",
-      "ct_a_values": [533, 544, 576, 630],
+      "ct_a_values": [
+        533,
+        544,
+        576,
+        630
+      ],
       "indicators": {
-        "min_thickness_um": [533],
-        "max_curvature_a_d": [46.5],
-        "min_curvature_a_d": [41.7],
-        "max_elevation_a_um": [20],
-        "max_elevation_p_um": [38]
-      }
+        "min_thickness_um": [
+          533
+        ],
+        "max_curvature_a_d": [
+          46.5
+        ],
+        "min_curvature_a_d": [
+          41.7
+        ],
+        "max_elevation_a_um": [
+          20
+        ],
+        "max_elevation_p_um": [
+          38
+        ]
+      },
+      "set": "tuning"
     },
     {
       "exam_id": "independent_test/normal/20",
       "laterality": "OS",
-      "ct_a_values": [511, 519, 544, 591],
+      "ct_a_values": [
+        511,
+        519,
+        544,
+        591
+      ],
       "indicators": {
-        "min_thickness_um": [511],
-        "max_curvature_a_d": [43.4],
-        "min_curvature_a_d": [41.7],
-        "max_elevation_a_um": [4],
-        "max_elevation_p_um": [10]
-      }
+        "min_thickness_um": [
+          511
+        ],
+        "max_curvature_a_d": [
+          43.4
+        ],
+        "min_curvature_a_d": [
+          41.7
+        ],
+        "max_elevation_a_um": [
+          4
+        ],
+        "max_elevation_p_um": [
+          10
+        ]
+      },
+      "set": "tuning"
     },
     {
       "exam_id": "train_validation/keratoconus/14",
       "laterality": "OS",
-      "ct_a_values": [460, 481, 532, 601],
+      "ct_a_values": [
+        460,
+        481,
+        532,
+        601
+      ],
       "indicators": {
-        "min_thickness_um": [460],
-        "max_curvature_a_d": [52.5],
-        "min_curvature_a_d": [38.2],
-        "max_elevation_a_um": [36, 39],
-        "max_elevation_p_um": [62]
-      }
+        "min_thickness_um": [
+          460
+        ],
+        "max_curvature_a_d": [
+          52.5
+        ],
+        "min_curvature_a_d": [
+          38.2
+        ],
+        "max_elevation_a_um": [
+          36,
+          39
+        ],
+        "max_elevation_p_um": [
+          62
+        ]
+      },
+      "set": "tuning"
     },
     {
       "exam_id": "independent_test/keratoconus/3",
       "laterality": "OD",
-      "ct_a_values": [476, 487, 520, 574],
+      "ct_a_values": [
+        476,
+        487,
+        520,
+        574
+      ],
       "indicators": {
-        "min_thickness_um": [476],
-        "max_curvature_a_d": [45.2],
-        "min_curvature_a_d": [38.6],
-        "max_elevation_a_um": [18],
-        "max_elevation_p_um": [37]
-      }
+        "min_thickness_um": [
+          476
+        ],
+        "max_curvature_a_d": [
+          45.2
+        ],
+        "min_curvature_a_d": [
+          38.6
+        ],
+        "max_elevation_a_um": [
+          18
+        ],
+        "max_elevation_p_um": [
+          37
+        ]
+      },
+      "set": "tuning"
     },
     {
       "exam_id": "independent_test/keratoconus/30",
       "laterality": "OS",
-      "ct_a_values": [431, 454, 511, 570],
+      "ct_a_values": [
+        431,
+        454,
+        511,
+        570
+      ],
       "indicators": {
-        "min_thickness_um": [431],
-        "max_curvature_a_d": [52.8],
-        "min_curvature_a_d": [38.3, 38.9],
-        "max_elevation_a_um": [27],
-        "max_elevation_p_um": [57]
-      }
+        "min_thickness_um": [
+          431
+        ],
+        "max_curvature_a_d": [
+          52.8
+        ],
+        "min_curvature_a_d": [
+          38.3,
+          38.9
+        ],
+        "max_elevation_a_um": [
+          27
+        ],
+        "max_elevation_p_um": [
+          57
+        ]
+      },
+      "set": "tuning"
     },
     {
       "exam_id": "train_validation/keratoconus/100",
       "laterality": "OS",
-      "ct_a_values": [375, 415, 504, 603, 700],
+      "ct_a_values": [
+        375,
+        415,
+        504,
+        603,
+        700
+      ],
       "indicators": {
-        "min_thickness_um": [375],
+        "min_thickness_um": [
+          375
+        ],
         "max_curvature_a_d": null,
-        "min_curvature_a_d": [39.8],
-        "max_elevation_a_um": [48],
-        "max_elevation_p_um": [80]
-      }
+        "min_curvature_a_d": [
+          39.8
+        ],
+        "max_elevation_a_um": [
+          48
+        ],
+        "max_elevation_p_um": [
+          80
+        ]
+      },
+      "set": "tuning"
     },
     {
       "exam_id": "train_validation/suspect/1",
       "laterality": "OD",
-      "ct_a_values": [472, 482, 509, 554, 621],
+      "ct_a_values": [
+        472,
+        482,
+        509,
+        554,
+        621
+      ],
       "indicators": {
-        "min_thickness_um": [472],
-        "max_curvature_a_d": [52.5],
-        "min_curvature_a_d": [39.2],
-        "max_elevation_a_um": [73],
-        "max_elevation_p_um": [112]
-      }
+        "min_thickness_um": [
+          472
+        ],
+        "max_curvature_a_d": [
+          52.5
+        ],
+        "min_curvature_a_d": [
+          39.2
+        ],
+        "max_elevation_a_um": [
+          73
+        ],
+        "max_elevation_p_um": [
+          112
+        ]
+      },
+      "set": "tuning"
     },
     {
       "exam_id": "independent_test/suspect/7",
       "laterality": "OD",
-      "ct_a_values": [476, 487, 520, 574],
+      "ct_a_values": [
+        476,
+        487,
+        520,
+        574
+      ],
       "indicators": {
-        "min_thickness_um": [476],
-        "max_curvature_a_d": [45.2],
-        "min_curvature_a_d": [38.6],
-        "max_elevation_a_um": [18],
-        "max_elevation_p_um": [37]
-      }
+        "min_thickness_um": [
+          476
+        ],
+        "max_curvature_a_d": [
+          45.2
+        ],
+        "min_curvature_a_d": [
+          38.6
+        ],
+        "max_elevation_a_um": [
+          18
+        ],
+        "max_elevation_p_um": [
+          37
+        ]
+      },
+      "set": "tuning"
     },
     {
       "exam_id": "independent_test/suspect/40",
       "laterality": "OS",
-      "ct_a_values": [506, 515, 543, 596, 678],
+      "ct_a_values": [
+        506,
+        515,
+        543,
+        596,
+        678
+      ],
       "indicators": {
-        "min_thickness_um": [506],
-        "max_curvature_a_d": [45.8],
-        "min_curvature_a_d": [41.7],
-        "max_elevation_a_um": [5, 12],
-        "max_elevation_p_um": [9]
+        "min_thickness_um": [
+          506
+        ],
+        "max_curvature_a_d": [
+          45.8
+        ],
+        "min_curvature_a_d": [
+          41.7
+        ],
+        "max_elevation_a_um": [
+          5,
+          12
+        ],
+        "max_elevation_p_um": [
+          9
+        ]
+      },
+      "set": "tuning"
+    },
+    {
+      "exam_id": "train_validation/normal/123",
+      "set": "tuning",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          554
+        ],
+        "max_curvature_a_d": [
+          40.9
+        ],
+        "min_curvature_a_d": [
+          39.2
+        ],
+        "max_elevation_a_um": [
+          6
+        ],
+        "max_elevation_p_um": [
+          14
+        ]
+      }
+    },
+    {
+      "exam_id": "independent_test/normal/28",
+      "set": "tuning",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          538
+        ],
+        "max_curvature_a_d": [
+          45.9
+        ],
+        "min_curvature_a_d": [
+          42.8
+        ],
+        "max_elevation_a_um": [
+          14
+        ],
+        "max_elevation_p_um": [
+          21
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/normal/86",
+      "set": "tuning",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          502
+        ],
+        "max_curvature_a_d": null,
+        "min_curvature_a_d": [
+          38.7
+        ],
+        "max_elevation_a_um": [
+          31
+        ],
+        "max_elevation_p_um": [
+          42
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/normal/60",
+      "set": "tuning",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          566
+        ],
+        "max_curvature_a_d": null,
+        "min_curvature_a_d": [
+          40.5
+        ],
+        "max_elevation_a_um": [
+          11
+        ],
+        "max_elevation_p_um": [
+          22
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/normal/131",
+      "set": "tuning",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          524
+        ],
+        "max_curvature_a_d": null,
+        "min_curvature_a_d": [
+          39.2
+        ],
+        "max_elevation_a_um": [
+          21
+        ],
+        "max_elevation_p_um": [
+          31
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/normal/18",
+      "set": "tuning",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          493
+        ],
+        "max_curvature_a_d": null,
+        "min_curvature_a_d": [
+          40.1
+        ],
+        "max_elevation_a_um": [
+          3
+        ],
+        "max_elevation_p_um": [
+          18
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/normal/134",
+      "set": "tuning",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          566
+        ],
+        "max_curvature_a_d": null,
+        "min_curvature_a_d": [
+          41.1
+        ],
+        "max_elevation_a_um": [
+          6
+        ],
+        "max_elevation_p_um": [
+          22
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/keratoconus/22",
+      "set": "tuning",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          500
+        ],
+        "max_curvature_a_d": null,
+        "min_curvature_a_d": [
+          41.4
+        ],
+        "max_elevation_a_um": [
+          23
+        ],
+        "max_elevation_p_um": [
+          42,
+          46
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/keratoconus/39",
+      "set": "tuning",
+      "laterality": "OD",
+      "indicators": {
+        "min_thickness_um": [
+          454
+        ],
+        "max_curvature_a_d": null,
+        "min_curvature_a_d": null,
+        "max_elevation_a_um": [
+          23
+        ],
+        "max_elevation_p_um": [
+          46
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/keratoconus/9",
+      "set": "tuning",
+      "laterality": "OD",
+      "indicators": {
+        "min_thickness_um": [
+          473
+        ],
+        "max_curvature_a_d": null,
+        "min_curvature_a_d": [
+          40.0
+        ],
+        "max_elevation_a_um": [
+          23
+        ],
+        "max_elevation_p_um": [
+          41
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/keratoconus/88",
+      "set": "holdout",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          519
+        ],
+        "max_curvature_a_d": [
+          47.0
+        ],
+        "min_curvature_a_d": [
+          41.9
+        ],
+        "max_elevation_a_um": [
+          8
+        ],
+        "max_elevation_p_um": [
+          22
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/keratoconus/137",
+      "set": "holdout",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          479
+        ],
+        "max_curvature_a_d": null,
+        "min_curvature_a_d": [
+          42.8
+        ],
+        "max_elevation_a_um": [
+          32,
+          35
+        ],
+        "max_elevation_p_um": [
+          72
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/keratoconus/54",
+      "set": "holdout",
+      "laterality": "OD",
+      "indicators": {
+        "min_thickness_um": [
+          448
+        ],
+        "max_curvature_a_d": [
+          50.9
+        ],
+        "min_curvature_a_d": [
+          39.3
+        ],
+        "max_elevation_a_um": [
+          16
+        ],
+        "max_elevation_p_um": [
+          35
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/keratoconus/18",
+      "set": "holdout",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          455
+        ],
+        "max_curvature_a_d": [
+          55.1
+        ],
+        "min_curvature_a_d": [
+          36.6
+        ],
+        "max_elevation_a_um": [
+          36
+        ],
+        "max_elevation_p_um": [
+          61
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/suspect/65",
+      "set": "holdout",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          527
+        ],
+        "max_curvature_a_d": [
+          44.0
+        ],
+        "min_curvature_a_d": [
+          41.6
+        ],
+        "max_elevation_a_um": [
+          6
+        ],
+        "max_elevation_p_um": [
+          3
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/suspect/113",
+      "set": "holdout",
+      "laterality": "OD",
+      "indicators": {
+        "min_thickness_um": [
+          463
+        ],
+        "max_curvature_a_d": [
+          43.0
+        ],
+        "min_curvature_a_d": [
+          38.5
+        ],
+        "max_elevation_a_um": [
+          5
+        ],
+        "max_elevation_p_um": [
+          22
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/suspect/25",
+      "set": "holdout",
+      "laterality": "OD",
+      "indicators": {
+        "min_thickness_um": [
+          595
+        ],
+        "max_curvature_a_d": [
+          42.9
+        ],
+        "min_curvature_a_d": [
+          40.5
+        ],
+        "max_elevation_a_um": [
+          9
+        ],
+        "max_elevation_p_um": [
+          15
+        ]
+      }
+    },
+    {
+      "exam_id": "independent_test/suspect/27",
+      "set": "holdout",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          497
+        ],
+        "max_curvature_a_d": [
+          46.8
+        ],
+        "min_curvature_a_d": [
+          41.6
+        ],
+        "max_elevation_a_um": [
+          14
+        ],
+        "max_elevation_p_um": [
+          22
+        ]
+      }
+    },
+    {
+      "exam_id": "train_validation/suspect/58",
+      "set": "holdout",
+      "laterality": "OS",
+      "indicators": {
+        "min_thickness_um": [
+          574
+        ],
+        "max_curvature_a_d": [
+          46.3
+        ],
+        "min_curvature_a_d": [
+          39.8
+        ],
+        "max_elevation_a_um": [
+          27
+        ],
+        "max_elevation_p_um": [
+          51
+        ]
+      }
+    },
+    {
+      "exam_id": "independent_test/suspect/49",
+      "set": "holdout",
+      "laterality": "OD",
+      "indicators": {
+        "min_thickness_um": [
+          506
+        ],
+        "max_curvature_a_d": [
+          44.8
+        ],
+        "min_curvature_a_d": [
+          40.1
+        ],
+        "max_elevation_a_um": [
+          15
+        ],
+        "max_elevation_p_um": [
+          29
+        ]
       }
     }
   ]
