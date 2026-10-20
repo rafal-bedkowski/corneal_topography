@@ -54,7 +54,7 @@ Add new agents by appending an entry and creating the file in `/agents/`. Do not
 1. If unsure about a requirement, scope, or data format — stop and ask the Product Owner before proceeding.
 2. No editorial artifacts (no "TODO: fill this later", no placeholder comments, no stub functions left in place across iterations). Every iteration leaves the codebase clean.
 3. All project decisions, conventions, architecture notes, and agent definitions live in `CLAUDE.md`. Keep it up to date after every iteration.
-4. Do not commit anything. The Product Owner commits.
+4. Do not commit anything. The Product Owner commits. Agents never run `git add`, `git commit` or `git push`. At the end of each iteration, the orchestrator gives the Product Owner the exact git commands plus the proposed commit message, each with a short explanation (in Polish) of what the command does.
 5. Read the relevant agent `.md` file before performing work in that agent's role.
 6. When a new agent is added, update `CLAUDE.md` immediately and confirm with the Product Owner before using that agent in a cycle.
 
@@ -71,5 +71,6 @@ None yet. Recorded after the first Analyst and Developer cycles.
 
 Record architectural and scope decisions per iteration, newest first. Format: `YYYY-MM-DD — decision — reason`.
 
+- 2026-10-20 — Git policy: the Product Owner runs every git command; the orchestrator only supplies commands, commit message and a short explanation of each command — Product Owner wants full control over the repository history.
 - 2026-10-20 — Language convention: chat messages to the Product Owner in Polish, all project artifacts in English — Product Owner wants to follow progress in Polish while keeping the codebase in English.
 - 2026-10-20 — Project scaffolded (agents, directory structure, CLAUDE.md) — starting point; awaiting dataset in `/dataset/`.
