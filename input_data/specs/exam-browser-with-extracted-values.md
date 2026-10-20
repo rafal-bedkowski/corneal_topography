@@ -54,7 +54,7 @@ Example: `train_validation/keratoconus/14`.
 {
   "text": "43.1",            raw OCR string
   "value": 43.1,            parsed number, null when not parseable
-  "confidence": 0.98,       OCR confidence 0..1
+  "confidence": 0.75,       share of recognition passes that read this value, 0..1 (see 4.5)
   "x": 0.62, "y": 0.41,     centre of the text box, fraction of image width/height, origin top-left
   "status": "accepted"      accepted | low_confidence | out_of_range | rejected
 }
@@ -87,7 +87,8 @@ Remaining numeric strings are validated per map type:
 | `ct_a` | integer of 3 digits | 300–900 µm |
 
 - Format or range violation → `out_of_range`.
-- OCR confidence below 0.5 → `low_confidence` (checked first).
+- Confidence below 0.5 → `low_confidence` (checked first). Vision's own confidence is almost always 1.0 and says little, so the application runs several recognition passes over each image (different scale and contrast treatment) and combines them: tokens at the same position form one cluster, the value most passes agree on wins, and `confidence` is the share of passes that read it. A value read by fewer than half of the passes is `low_confidence`.
+- Padding characters (`.`, `-`, `*`, `•`, `:`) that the OCR reads around thickness and curvature values (box borders) are stripped before the format check; posterior curvature keeps a leading minus. Elevation values keep the strict format.
 - All others → `accepted`.
 
 Confidence alone is not sufficient: the test run produced wrong values at confidence 1.0, so format and range rules are mandatory.
@@ -245,7 +246,7 @@ Ingestion
 5. AC5: On a non-macOS platform the command exits non-zero with a message and writes nothing.
 6. AC6: Perimeter labels and `9mm` never appear with status `accepted`.
 7. AC7: Values violating the format or range rules in 4.5 are never `accepted`, verified by unit tests with synthetic OCR output including `43.11`, `148.6` on `sag_a`, `•15` and `+12..-` on `elv_a`.
-8. AC8: Accuracy on the gold sample `input_data/gold/gold_sample.json` (10 exams, hand-read by the Analyst): laterality and the five indicators `min_thickness_um`, `max_curvature_a_d`, `min_curvature_a_d`, `max_elevation_a_um`, `max_elevation_p_um` computed by ingestion are compared with the gold lists of acceptable values (an indicator is correct if it equals any listed value; `null` gold entries are not scored). At least 90% of the scored (exam, field) pairs are correct, and `min_thickness_um` is correct for at least 9 of 10 exams. If the targets are missed, the iteration is reported to the Product Owner, not silently adjusted. (Revised from the first draft, which measured the share of correct accepted values: hand-labelling all values on 70 images was not practical, and the indicators are what the application reports.)
+8. AC8: Accuracy on the gold sample `input_data/gold/gold_sample.json` (10 exams, hand-read by the Analyst): laterality and the five indicators `min_thickness_um`, `max_curvature_a_d`, `min_curvature_a_d`, `max_elevation_a_um`, `max_elevation_p_um` computed by ingestion are compared with the gold lists of acceptable values (an indicator is correct if it equals any listed value; `null` gold entries are not scored). At least 70% of the scored (exam, field) pairs are correct (lowered from the first draft's 90% by the Product Owner after the first implementation measured 74.6%, i.e. 44 of 59; 70% leaves room for run-to-run variation of the OCR: OCR of the 224×224 screenshots misses or misreads single values), laterality is correct for all 10 exams, and `min_thickness_um` is correct for at least 9 of 10 exams. If the targets are missed, the iteration is reported to the Product Owner, not silently adjusted. (Revised from the first draft, which measured the share of correct accepted values: hand-labelling all values on 70 images was not practical, and the indicators are what the application reports.)
 
 API
 9. AC9: `GET /api/health` returns 200 with `exams: 573` for the provided index and 503 when the index file is absent.

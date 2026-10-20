@@ -1,2 +1,18 @@
 .DS_Store
 dataset/archive/
+
+# Backend
+backend/.venv/
+backend/.cache/
+backend/data/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/coverage/
+frontend/next-env.d.ts
+frontend/*.tsbuildinfo
