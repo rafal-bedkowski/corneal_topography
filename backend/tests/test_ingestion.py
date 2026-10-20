@@ -10,7 +10,7 @@ from app.models import ExamIndex
 from ingest import cli
 from ingest.builder import build_index
 from ingest.discovery import discover
-from ingest.ocr import OcrUnavailableError
+from ingest.engines import OcrUnavailableError
 from ingest.rules import RawToken
 
 
@@ -151,7 +151,6 @@ def test_cli_runs_end_to_end_with_a_fake_recogniser(
     capsys: pytest.CaptureFixture[str],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(cli, "ensure_macos", lambda: None)
     output = tmp_path / "exams.json"
     code = cli.run(["--dataset-dir", str(dataset), "--output", str(output)], recognise=fake_ocr)
     assert code == 0
@@ -159,32 +158,28 @@ def test_cli_runs_end_to_end_with_a_fake_recogniser(
     assert len(ExamIndex.model_validate_json(output.read_text()).exams) == 3
 
 
-def test_cli_refuses_to_run_off_macos(
+def test_cli_exits_when_no_engine_is_available(
     dataset: Path,
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr("ingest.ocr.sys.platform", "linux")
+    def no_engine() -> None:
+        raise OcrUnavailableError(
+            "No OCR engine is available. vision: macOS Vision runs only on macOS."
+        )
+
+    monkeypatch.setattr(cli, "default_recogniser", no_engine)
     output = tmp_path / "exams.json"
-    code = cli.run(["--dataset-dir", str(dataset), "--output", str(output)], recognise=fake_ocr)
+    code = cli.run(["--dataset-dir", str(dataset), "--output", str(output)])
     assert code == 1
-    assert "macOS" in capsys.readouterr().err
+    assert "No OCR engine is available" in capsys.readouterr().err
     assert not output.exists()
 
 
 def test_cli_reports_a_missing_dataset_directory(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(cli, "ensure_macos", lambda: None)
     code = cli.run(["--dataset-dir", str(tmp_path / "nope"), "--output", str(tmp_path / "o.json")])
     assert code == 1
     assert "not found" in capsys.readouterr().err
-
-
-def test_ensure_macos_raises_elsewhere(monkeypatch: pytest.MonkeyPatch) -> None:
-    from ingest.ocr import ensure_macos
-
-    monkeypatch.setattr("ingest.ocr.sys.platform", "win32")
-    with pytest.raises(OcrUnavailableError):
-        ensure_macos()

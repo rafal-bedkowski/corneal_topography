@@ -8,8 +8,9 @@ from app.models import ExamIndex, ExamRecord, MapRecord, make_exam_id
 from ingest.consensus import merge_passes
 from ingest.discovery import DiscoveredExam, SkippedExam, discover
 from ingest.duplicates import mark_duplicates
+from ingest.engines import Recogniser
 from ingest.indicators import compute_indicators, detect_laterality
-from ingest.ocr import Recogniser
+from ingest.plausibility import refine
 from ingest.rules import RawToken
 
 
@@ -45,7 +46,9 @@ def _build_exam(
         relative = exam.files[spec.map_type]
         maps[spec.map_type] = MapRecord(
             file=relative,
-            values=merge_passes(tokens[dataset_dir / relative], spec.map_type),
+            values=refine(
+                merge_passes(tokens[dataset_dir / relative], spec.map_type), spec.map_type
+            ),
         )
     return ExamRecord(
         exam_id=make_exam_id(exam.split, exam.label, exam.case),

@@ -73,3 +73,23 @@ def test_numbers_win_over_labels_in_the_same_cluster() -> None:
 
 def test_no_passes_gives_no_values() -> None:
     assert merge_passes([], "ct_a") == []
+
+
+def test_a_tie_is_broken_by_the_neighbouring_values() -> None:
+    neighbours = [
+        tok("+5", 0.4, 0.5),
+        tok("+6", 0.6, 0.5),
+        tok("+4", 0.5, 0.4),
+        tok("+5", 0.5, 0.6),
+    ]
+    contested = [[tok("+60", 0.5, 0.5, 0.9)], [tok("+6", 0.5, 0.5, 0.8)]]
+    passes = [[*neighbours, *contested[0]], [*neighbours, *contested[1]]]
+    values = merge_passes(passes, "elv_a")
+    centre = next(v for v in values if abs(v.x - 0.5) < 0.01 and abs(v.y - 0.5) < 0.01)
+    assert centre.value == 6.0
+
+
+def test_a_tie_without_neighbours_goes_to_the_higher_vision_confidence() -> None:
+    passes = [[tok("+60", 0.5, 0.5, 0.9)], [tok("+6", 0.5, 0.5, 0.8)]]
+    (value,) = merge_passes(passes, "elv_a")
+    assert value.value == 60.0

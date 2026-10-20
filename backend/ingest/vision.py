@@ -1,9 +1,4 @@
-"""Text recognition with macOS Vision, via a small Swift helper compiled on first use.
-
-Vision reads these small screenshots unreliably: a value missed at one scale is often found at
-another. Every image is therefore recognised in several passes (different scale and contrast
-treatment); `ingest.consensus` combines the passes.
-"""
+"""Text recognition with macOS Vision, via a small Swift helper compiled on first use."""
 
 import json
 import os
@@ -11,33 +6,24 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
 
-from PIL import Image, ImageOps
+from PIL import Image
 
+from ingest.engines import (
+    OcrUnavailableError,
+    Pass,
+    Progress,
+    map_type_of,
+    prepare_image,
+)
 from ingest.rules import RawToken
 
 HELPER_SOURCE = Path(__file__).with_name("vision_ocr.swift")
 HELPER_CACHE_DIR = Path(__file__).resolve().parents[1] / ".cache"
-BINARY_THRESHOLD = 140
 MAX_WORKERS = 8
-
-Mode = Literal["rgb", "gray", "binary"]
-# Tokens of every pass, per original image path.
-Recogniser = Callable[[Sequence[Path]], dict[Path, list[list[RawToken]]]]
-Progress = Callable[[str], None]
-
-
-@dataclass(frozen=True)
-class Pass:
-    name: str
-    scale: int
-    mode: Mode
-
 
 PASSES: tuple[Pass, ...] = (
     Pass("rgb3", 3, "rgb"),
@@ -47,42 +33,39 @@ PASSES: tuple[Pass, ...] = (
 )
 
 
-class OcrUnavailableError(Exception):
-    """OCR cannot run on this machine."""
+class VisionEngine:
+    name = "vision"
 
+    def unavailable_reason(self) -> str | None:
+        if sys.platform != "darwin":
+            return "macOS Vision runs only on macOS."
+        if shutil.which("swiftc") is None:
+            return "`swiftc` not found; install the Xcode command line tools."
+        return None
 
-def ensure_macos() -> None:
-    if sys.platform != "darwin":
-        raise OcrUnavailableError(
-            "Ingestion uses macOS Vision for text recognition and runs only on macOS."
-        )
-
-
-def prepare_image(image: Image.Image, recognition_pass: Pass) -> Image.Image:
-    size = (image.width * recognition_pass.scale, image.height * recognition_pass.scale)
-    if recognition_pass.mode == "rgb":
-        return image.convert("RGB").resize(size, Image.Resampling.LANCZOS)
-    gray = ImageOps.autocontrast(
-        image.convert("L").resize(size, Image.Resampling.BICUBIC), cutoff=2
-    )
-    if recognition_pass.mode == "gray":
-        return gray
-    return gray.point(lambda value: 255 if value > BINARY_THRESHOLD else 0)
+    def recognise(
+        self, images: Sequence[Path], progress: Progress | None = None
+    ) -> dict[Path, list[list[RawToken]]]:
+        return recognise_images(images, progress)
 
 
 def recognise_images(
     images: Sequence[Path], progress: Progress | None = None
 ) -> dict[Path, list[list[RawToken]]]:
     """Recognise the text of each image in every pass. Returns the tokens per pass and image."""
-    ensure_macos()
     helper = _compile_helper()
     result: dict[Path, list[list[RawToken]]] = {image: [] for image in images}
+    kinds = {image: map_type_of(image) for image in images}
     for number, recognition_pass in enumerate(PASSES, start=1):
+        subset = [image for image in images if recognition_pass.applies_to(kinds[image])]
         if progress:
-            progress(f"Recognition pass {number}/{len(PASSES)} ({recognition_pass.name})")
+            progress(
+                f"Vision pass {number}/{len(PASSES)} "
+                f"({recognition_pass.name}, {len(subset)} images)"
+            )
         with tempfile.TemporaryDirectory(prefix="ocr-") as tmp:
             prepared: dict[Path, Path] = {}
-            for index, image in enumerate(images):
+            for index, image in enumerate(subset):
                 target = Path(tmp) / f"{index}.png"
                 with Image.open(image) as source:
                     prepare_image(source, recognition_pass).save(target)

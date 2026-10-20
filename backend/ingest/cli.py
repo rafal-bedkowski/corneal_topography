@@ -10,8 +10,10 @@ from app.config import Settings
 from app.constants import VALUE_STATUSES
 from app.models import ExamIndex
 from ingest.builder import BuildResult, build_index
-from ingest.ocr import OcrUnavailableError, Recogniser, ensure_macos, recognise_images
-from ingest.rules import RawToken
+from ingest.engines import OcrUnavailableError, Recogniser, combine, select_engines
+from ingest.rapid import RapidEngine
+from ingest.token_cache import with_cache
+from ingest.vision import VisionEngine
 
 
 def write_index_atomically(index: ExamIndex, target: Path) -> None:
@@ -54,27 +56,37 @@ def summarise(result: BuildResult) -> str:
     return "\n".join(lines)
 
 
-def recognise_with_progress(images: Sequence[Path]) -> dict[Path, list[list[RawToken]]]:
-    return recognise_images(
-        images, progress=lambda message: print(message, file=sys.stderr, flush=True)
-    )
+def default_recogniser() -> Recogniser:
+    """All available engines (restricted by `INGEST_ENGINES` / `INGEST_DISABLE_VISION`)."""
+    engines = select_engines([VisionEngine(), RapidEngine()])
+    print("OCR engines: " + ", ".join(engine.name for engine in engines), file=sys.stderr)
+    return combine(engines, progress=lambda message: print(message, file=sys.stderr, flush=True))
 
 
-def run(argv: Sequence[str] | None = None, recognise: Recogniser = recognise_with_progress) -> int:
+def run(argv: Sequence[str] | None = None, recognise: Recogniser | None = None) -> int:
     settings = Settings.from_env()
     parser = argparse.ArgumentParser(
         prog="python -m ingest",
-        description="Build the exam index (OCR of the map images). Runs on macOS only.",
+        description="Build the exam index (OCR of the map images).",
     )
     parser.add_argument("--dataset-dir", type=Path, default=settings.dataset_dir)
     parser.add_argument("--output", type=Path, default=settings.index_path)
+    parser.add_argument(
+        "--tokens-cache",
+        type=Path,
+        default=None,
+        help="JSON file with recognition tokens; reused when it covers every image, else written.",
+    )
     args = parser.parse_args(argv)
 
     try:
-        ensure_macos()
         if not args.dataset_dir.is_dir():
             raise OcrUnavailableError(f"Dataset directory not found: {args.dataset_dir}")
-        result = build_index(args.dataset_dir, recognise)
+        engine = recognise or default_recogniser()
+        recogniser = (
+            with_cache(engine, args.tokens_cache, args.dataset_dir) if args.tokens_cache else engine
+        )
+        result = build_index(args.dataset_dir, recogniser)
     except OcrUnavailableError as error:
         print(f"error: {error}", file=sys.stderr)
         return 1

@@ -21,7 +21,7 @@ Details: `input_data/specs/exam-browser-with-extracted-values.md` and `input_dat
 
 - Backend: FastAPI (Python 3.12+), Pydantic
 - Frontend: Next.js (React, TypeScript), Recharts
-- OCR (offline step): macOS Vision through a small Swift helper
+- OCR (offline ingestion step): macOS Vision (Swift helper, macOS only) and RapidOCR (pip package, runs anywhere), several image passes per map combined by voting
 
 ## Project structure
 
@@ -49,11 +49,15 @@ python3 -m venv .venv
 .venv/bin/pip install -r requirements-dev.txt
 ```
 
-Build the exam index (macOS only, takes several minutes; needs the Xcode command line tools for `swiftc`):
+Build the exam index (takes about 15–20 minutes; recognises 573 exams × 7 maps in several passes):
 
 ```bash
 .venv/bin/python -m ingest
 ```
+
+The ingestion uses every OCR engine that is available: macOS Vision (needs macOS and the Xcode command line tools for `swiftc`) and RapidOCR (installed by `requirements.txt`, works on macOS, Linux and Windows). On Linux it therefore runs with RapidOCR alone. Restrict the engines with `INGEST_ENGINES=rapid` (or `vision`, `vision,rapid`); `INGEST_DISABLE_VISION=1` is a shortcut for RapidOCR alone.
+
+To try rule changes without recognising the images again, keep the recognised tokens: `.venv/bin/python -m ingest --tokens-cache .cache/tokens.json --output .cache/exams.json` (the first run writes the cache, later runs reuse it). Score an index against the hand-read gold sample with `.venv/bin/python -m ingest.evaluate --index <file> --set tuning` (`holdout` is for final evaluation only).
 
 Start the API on http://localhost:8000:
 
@@ -86,6 +90,8 @@ Open http://localhost:3000. Frontend checks: `npm test`, `npm run lint`, `npm ru
 |----------|---------|---------|
 | `DATASET_DIR` | ingestion, backend (serves images) | `dataset/archive` |
 | `EXAMS_INDEX_PATH` | ingestion, backend | `backend/data/exams.json` |
+| `INGEST_ENGINES` | ingestion (comma separated: `vision`, `rapid`) | all available |
+| `INGEST_DISABLE_VISION` | ingestion (`1` = RapidOCR alone) | unset |
 | `CORS_ORIGINS` | backend (comma separated) | `http://localhost:3000` |
 | `NEXT_PUBLIC_API_URL` | frontend (set at build time) | `http://localhost:8000` |
 
@@ -93,7 +99,7 @@ Relative paths are resolved against the repository root.
 
 ## Deployment notes
 
-The OCR step runs only on macOS. Deploy the backend with a prebuilt `exams.json` and the dataset directory, and the frontend with `NEXT_PUBLIC_API_URL` pointing at the backend. The dataset has no stated license, so check its redistribution terms before putting it on a public server.
+The ingestion can run on any platform with RapidOCR, but the highest accuracy comes from running it on macOS with both engines. Deploy the backend with a prebuilt `exams.json` and the dataset directory, and the frontend with `NEXT_PUBLIC_API_URL` pointing at the backend. The dataset has no stated license, so check its redistribution terms before putting it on a public server.
 
 ## Development workflow
 

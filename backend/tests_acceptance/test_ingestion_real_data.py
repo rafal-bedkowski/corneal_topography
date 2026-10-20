@@ -5,6 +5,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from app.config import Settings
 from app.constants import MAP_SPECS
 from app.models import ExamIndex, ExamRecord
@@ -113,21 +115,21 @@ def _gold_scores(exams: dict[str, ExamRecord], gold: list[dict[str, Any]]) -> tu
     return scored, correct, thickness_correct
 
 
-def test_ac8_gold_sample_overall_accuracy(
-    exams: dict[str, ExamRecord], gold: list[dict[str, Any]]
+@pytest.mark.parametrize("which", ["tuning", "holdout"])
+def test_r8_gold_sample_accuracy(
+    which: str, exams: dict[str, ExamRecord], gold: list[dict[str, Any]]
 ) -> None:
-    scored, correct, _ = _gold_scores(exams, gold)
-    assert correct / scored >= 0.70, f"{correct}/{scored} = {correct / scored:.0%}"
+    selected = [item for item in gold if item["set"] == which]
+    scored, correct, _ = _gold_scores(exams, selected)
+    assert correct / scored >= 0.85, f"{which}: {correct}/{scored} = {correct / scored:.1%}"
 
 
-def test_ac8_gold_sample_thickness(
-    exams: dict[str, ExamRecord], gold: list[dict[str, Any]]
-) -> None:
+def test_r8_gold_sample_thickness(exams: dict[str, ExamRecord], gold: list[dict[str, Any]]) -> None:
     _, _, thickness_correct = _gold_scores(exams, gold)
-    assert thickness_correct >= 0.9 * len(gold), f"{thickness_correct}/{len(gold)}"
+    assert thickness_correct >= 28, f"{thickness_correct}/{len(gold)}"
 
 
-def test_ac8_gold_sample_laterality(
+def test_r8_gold_sample_laterality(
     exams: dict[str, ExamRecord], gold: list[dict[str, Any]]
 ) -> None:
     assert all(exams[g["exam_id"]].laterality == g["laterality"] for g in gold)
